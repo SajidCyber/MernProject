@@ -1,0 +1,229 @@
+/* Post Food Page */
+.post-food-page {
+  min-height: 100vh;
+  background: var(--gray-50);
+  padding: 100px 0 3rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.post-form-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100);
+  max-width: 640px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Form Header */
+.form-header {
+  text-align: center;
+  padding: 2.5rem 2rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary-50), var(--primary-100));
+  border-bottom: 1px solid var(--primary-200);
+}
+
+.form-icon {
+  width: 64px;
+  height: 64px;
+  background: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-600);
+  margin: 0 auto 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.form-header h1 {
+  font-size: 1.75rem;
+  color: var(--gray-900);
+  margin-bottom: 0.5rem;
+}
+
+.form-header p {
+  color: var(--gray-600);
+}
+
+/* Form Body */
+.post-form {
+  padding: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.post-form .form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.post-form .form-label svg {
+  color: var(--gray-400);
+}
+
+.post-form .form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 0.95rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  background: white;
+  transition: all 0.2s;
+}
+
+.post-form .form-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+/* Location Group */
+.location-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.location-or {
+  color: var(--gray-400);
+  font-size: 0.875rem;
+}
+
+.coords-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.coords-preview {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--primary-50);
+  border-radius: var(--radius-md);
+  color: var(--primary-700);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* Success Card */
+.success-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  padding: 4rem 2rem;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+.success-icon {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-100);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-600);
+  margin: 0 auto 1.5rem;
+}
+
+.success-card h2 {
+  font-size: 1.75rem;
+  color: var(--gray-900);
+  margin-bottom: 0.5rem;
+}
+
+.success-card p {
+  color: var(--gray-600);
+  margin-bottom: 0.5rem;
+}
+
+.redirect-text {
+  color: var(--gray-400);
+  font-size: 0.875rem;
+  margin-top: 1.5rem;
+}
+
+/* Spin animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .post-form-card {
+    border-radius: 0;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: 1;
+  }
+
+  .location-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .location-or {
+    text-align: center;
+  }
+
+  .coords-group {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}
