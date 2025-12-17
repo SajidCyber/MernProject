@@ -10,6 +10,8 @@ import {
   LayoutDashboard, 
   PlusCircle, 
   List,
+  Package,
+  ClipboardList,
   ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +21,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { user, isAuthenticated, logout, isDonor } = useAuth();
+  const { user, isAuthenticated, logout, isDonor, isReceiver } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -68,6 +70,18 @@ export default function Navbar() {
                 <Link to="/post-food" className={`nav-link ${location.pathname === '/post-food' ? 'active' : ''}`}>
                   <PlusCircle size={18} />
                   Post Food
+                </Link>
+              )}
+              {isDonor && (
+                <Link to="/manage-claims" className={`nav-link ${location.pathname === '/manage-claims' ? 'active' : ''}`}>
+                  <ClipboardList size={18} />
+                  Manage Claims
+                </Link>
+              )}
+              {isReceiver && (
+                <Link to="/my-claims" className={`nav-link ${location.pathname === '/my-claims' ? 'active' : ''}`}>
+                  <Package size={18} />
+                  My Claims
                 </Link>
               )}
             </>
@@ -177,6 +191,18 @@ export default function Navbar() {
                     <Link to="/post-food" className="mobile-link">
                       <PlusCircle size={20} />
                       Post Food
+                    </Link>
+                  )}
+                  {isDonor && (
+                    <Link to="/manage-claims" className="mobile-link">
+                      <ClipboardList size={20} />
+                      Manage Claims
+                    </Link>
+                  )}
+                  {isReceiver && (
+                    <Link to="/my-claims" className="mobile-link">
+                      <Package size={20} />
+                      My Claims
                     </Link>
                   )}
                   <div className="mobile-divider"></div>

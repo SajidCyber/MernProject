@@ -13,7 +13,8 @@ import {
   Users,
   MapPin,
   ArrowRight,
-  Package
+  Package,
+  ClipboardList
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -49,7 +50,7 @@ export default function Dashboard() {
           });
           setRecentItems(foods.slice(0, 5));
         } else {
-          const res = await api.get('/claims/mine');
+          const res = await api.get('/claims/my-claims');
           const claims = res.data || [];
           setStats({
             total: claims.length,
@@ -87,11 +88,11 @@ export default function Dashboard() {
   const quickActions = isDonor
     ? [
         { label: 'Post New Food', icon: <PlusCircle size={22} />, to: '/post-food', primary: true },
-        { label: 'View My Posts', icon: <List size={22} />, to: '/foods' }
+        { label: 'Manage Claims', icon: <ClipboardList size={22} />, to: '/manage-claims' }
       ]
     : [
         { label: 'Browse Food', icon: <MapPin size={22} />, to: '/foods', primary: true },
-        { label: 'My Claims', icon: <List size={22} />, to: '/claims' }
+        { label: 'My Claims', icon: <List size={22} />, to: '/my-claims' }
       ];
 
   return (
@@ -154,7 +155,7 @@ export default function Dashboard() {
                 <TrendingUp size={20} />
                 Recent {isDonor ? 'Posts' : 'Claims'}
               </h2>
-              <Link to={isDonor ? '/foods' : '/claims'} className="view-all">
+              <Link to={isDonor ? '/manage-claims' : '/my-claims'} className="view-all">
                 View All <ArrowRight size={16} />
               </Link>
             </div>

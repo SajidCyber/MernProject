@@ -19,7 +19,25 @@ export default function FoodList() {
   const [filter, setFilter] = useState('all');
   const [location, setLocation] = useState(null);
   const [locating, setLocating] = useState(false);
+  const [userClaims, setUserClaims] = useState({}); // Map of foodId -> claim status
   const { isAuthenticated, isReceiver } = useAuth();
+
+  // Fetch user's existing claims to track their status
+  const fetchUserClaims = async () => {
+    if (!isAuthenticated || !isReceiver) return;
+    try {
+      const res = await api.get('/claims/my-claims');
+      const claimsMap = {};
+      (res.data || []).forEach(claim => {
+        if (claim.foodId?._id) {
+          claimsMap[claim.foodId._id] = claim.status;
+        }
+      });
+      setUserClaims(claimsMap);
+    } catch (err) {
+      console.error('Fetch user claims error:', err);
+    }
+  };
 
   const fetchFoods = async (coords) => {
     setLoading(true);
@@ -61,7 +79,8 @@ export default function FoodList() {
 
   useEffect(() => {
     getLocation();
-  }, []);
+    fetchUserClaims();
+  }, [isAuthenticated, isReceiver]);
 
   const handleClaim = async (foodId) => {
     if (!isAuthenticated) {
@@ -75,6 +94,8 @@ export default function FoodList() {
     try {
       await api.post('/claims', { foodId });
       toast.success('Claim request sent!');
+      // Update local claim status immediately
+      setUserClaims(prev => ({ ...prev, [foodId]: 'Pending' }));
       fetchFoods(location);
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Claim failed');
@@ -168,6 +189,7 @@ export default function FoodList() {
                 food={food} 
                 onClaim={handleClaim}
                 showClaimButton={isAuthenticated && isReceiver}
+                userClaimStatus={userClaims[food._id] || null}
               />
             ))}
           </motion.div>

@@ -24,7 +24,7 @@ function getTimeRemaining(expiryTime) {
   return { expired: false, text: `${minutes}m left`, urgent: true };
 }
 
-export default function FoodCard({ food, onClaim, showClaimButton = true }) {
+export default function FoodCard({ food, onClaim, showClaimButton = true, userClaimStatus = null }) {
   const [timeLeft, setTimeLeft] = useState(() => getTimeRemaining(food.expiryTime));
 
   useEffect(() => {
@@ -44,6 +44,11 @@ export default function FoodCard({ food, onClaim, showClaimButton = true }) {
   const foodEmojis = ['🍕', '🍔', '🥗', '🍱', '🍜', '🥪', '🍛', '🥘', '🍲', '🍝'];
   const emoji = foodEmojis[food.foodName?.length % foodEmojis.length] || '🍽️';
 
+  // Build image URL - handle both relative and absolute paths
+  const imageUrl = food.imageUrl 
+    ? (food.imageUrl.startsWith('http') ? food.imageUrl : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${food.imageUrl}`)
+    : null;
+
   return (
     <motion.div 
       className="food-card"
@@ -52,12 +57,21 @@ export default function FoodCard({ food, onClaim, showClaimButton = true }) {
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="food-card-header">
-        <div className="food-emoji">{emoji}</div>
-        <span className={`badge badge-${statusColors[food.status]}`}>
-          {food.status}
-        </span>
-      </div>
+      {imageUrl ? (
+        <div className="food-card-image">
+          <img src={imageUrl} alt={food.foodName} />
+          <span className={`badge badge-${statusColors[food.status]}`}>
+            {food.status}
+          </span>
+        </div>
+      ) : (
+        <div className="food-card-header">
+          <div className="food-emoji">{emoji}</div>
+          <span className={`badge badge-${statusColors[food.status]}`}>
+            {food.status}
+          </span>
+        </div>
+      )}
 
       <div className="food-card-body">
         <h3 className="food-title">{food.foodName}</h3>
@@ -92,11 +106,12 @@ export default function FoodCard({ food, onClaim, showClaimButton = true }) {
         )}
       </div>
 
-      {showClaimButton && food.status === 'Available' && (
+      {showClaimButton && (food.status === 'Available' || userClaimStatus) && (
         <div className="food-card-footer">
           <ClaimButton 
             status={food.status} 
-            onClick={() => onClaim && onClaim(food._id)} 
+            onClick={() => onClaim && onClaim(food._id)}
+            claimStatus={userClaimStatus}
           />
         </div>
       )}

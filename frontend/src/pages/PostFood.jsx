@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -9,14 +9,52 @@ import {
   MapPin, 
   ArrowRight,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  Camera,
+  X,
+  ImageIcon,
+  Navigation
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import './PostFood.css';
+
+// Fix for default marker icon in Leaflet with Webpack/Vite
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Component to handle map clicks
+function LocationMarker({ position, setPosition }) {
+  useMapEvents({
+    click(e) {
+      setPosition(e.latlng);
+    },
+  });
+
+  return position ? <Marker position={position} /> : null;
+}
+
+// Component to recenter map when position changes
+function MapUpdater({ position }) {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.setView(position, map.getZoom());
+    }
+  }, [position, map]);
+  return null;
+}
 
 export default function PostFood() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [form, setForm] = useState({
     foodName: '',
     description: '',
@@ -25,11 +63,51 @@ export default function PostFood() {
     latitude: '',
     longitude: ''
   });
+  const [mapPosition, setMapPosition] = useState(null);
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Update form when map position changes
+  useEffect(() => {
+    if (mapPosition) {
+      setForm(prev => ({
+        ...prev,
+        latitude: mapPosition.lat.toFixed(6),
+        longitude: mapPosition.lng.toFixed(6)
+      }));
+    }
+  }, [mapPosition]);
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image must be less than 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const getLocation = () => {
     if (!navigator.geolocation) {
@@ -39,6 +117,11 @@ export default function PostFood() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        const newPosition = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        };
+        setMapPosition(newPosition);
         setForm({
           ...form,
           latitude: pos.coords.latitude.toFixed(6),
@@ -49,10 +132,15 @@ export default function PostFood() {
       },
       () => {
         setLocating(false);
-        toast.error('Could not get location');
+        toast.error('Could not get location. Click on the map to set location.');
       }
     );
   };
+
+  // Auto-trigger GPS location on page load
+  useEffect(() => {
+    getLocation();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,13 +154,20 @@ export default function PostFood() {
     try {
       const expiryTime = new Date(Date.now() + parseInt(form.expiryHours) * 60 * 60 * 1000).toISOString();
       
-      await api.post('/foods', {
-        foodName: form.foodName,
-        description: form.description,
-        quantity: form.quantity,
-        expiryTime,
-        latitude: parseFloat(form.latitude),
-        longitude: parseFloat(form.longitude)
+      // Use FormData for file upload
+      const formData = new FormData();
+      formData.append('foodName', form.foodName);
+      formData.append('description', form.description);
+      formData.append('quantity', form.quantity);
+      formData.append('expiryTime', expiryTime);
+      formData.append('latitude', parseFloat(form.latitude));
+      formData.append('longitude', parseFloat(form.longitude));
+      if (image) {
+        formData.append('image', image);
+      }
+
+      await api.post('/foods', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       setSuccess(true);
@@ -160,6 +255,42 @@ export default function PostFood() {
                 />
               </div>
 
+              <div className="form-group full-width">
+                <label className="form-label">
+                  <Camera size={16} />
+                  Food Image
+                </label>
+                <div className="image-upload-area">
+                  {imagePreview ? (
+                    <div className="image-preview-container">
+                      <img src={imagePreview} alt="Food preview" className="image-preview" />
+                      <button 
+                        type="button" 
+                        className="remove-image-btn"
+                        onClick={removeImage}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="image-upload-label">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="image-input"
+                      />
+                      <div className="upload-placeholder">
+                        <ImageIcon size={32} />
+                        <span>Click to upload food image</span>
+                        <span className="upload-hint">JPEG, PNG, GIF up to 5MB</span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
+
               <div className="form-group">
                 <label className="form-label">
                   <Package size={16} />
@@ -193,7 +324,12 @@ export default function PostFood() {
                   <option value="4">4 hours</option>
                   <option value="6">6 hours</option>
                   <option value="12">12 hours</option>
-                  <option value="24">24 hours</option>
+                  <option value="24">1 day</option>
+                  <option value="48">2 days</option>
+                  <option value="72">3 days</option>
+                  <option value="96">4 days</option>
+                  <option value="120">5 days</option>
+                  <option value="168">1 week</option>
                 </select>
               </div>
 
@@ -216,36 +352,32 @@ export default function PostFood() {
                       </>
                     ) : (
                       <>
-                        <MapPin size={18} />
-                        Use My Location
+                        <Navigation size={18} />
+                        Use My Current Location
                       </>
                     )}
                   </button>
-                  <span className="location-or">or enter manually</span>
+                  <span className="location-or">or click on the map to select</span>
                 </div>
-                <div className="coords-group">
-                  <input
-                    type="text"
-                    name="latitude"
-                    value={form.latitude}
-                    onChange={handleChange}
-                    placeholder="Latitude"
-                    className="form-input"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="longitude"
-                    value={form.longitude}
-                    onChange={handleChange}
-                    placeholder="Longitude"
-                    className="form-input"
-                    required
-                  />
+                
+                <div className="map-container">
+                  <MapContainer
+                    center={mapPosition || { lat: 20.5937, lng: 78.9629 }}
+                    zoom={mapPosition ? 15 : 5}
+                    style={{ height: '300px', width: '100%', borderRadius: '12px' }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <LocationMarker position={mapPosition} setPosition={setMapPosition} />
+                    <MapUpdater position={mapPosition} />
+                  </MapContainer>
                 </div>
+
                 {form.latitude && form.longitude && (
                   <div className="coords-preview">
-                    📍 {form.latitude}, {form.longitude}
+                    📍 Selected: {form.latitude}, {form.longitude}
                   </div>
                 )}
               </div>

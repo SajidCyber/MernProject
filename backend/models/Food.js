@@ -7,6 +7,7 @@ const foodSchema = new mongoose.Schema(
     description: { type: String },
     quantity: { type: String, required: true },
     expiryTime: { type: Date, required: true },
+    imageUrl: { type: String }, // Path to uploaded food image
     location: {
       type: { type: String, enum: ['Point'], default: 'Point' },
       coordinates: { type: [Number], required: true }, // [longitude, latitude]

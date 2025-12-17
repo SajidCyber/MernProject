@@ -1,23 +1,61 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Loader2, HandHeart } from 'lucide-react';
+import { Check, Loader2, HandHeart, Clock, XCircle } from 'lucide-react';
+import './ClaimButton.css';
 
-export default function ClaimButton({ status = 'Available', onClick, loading = false }) {
+export default function ClaimButton({ status = 'Available', onClick, loading = false, claimStatus = null }) {
   const [clicked, setClicked] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleClick = async () => {
-    if (status !== 'Available' || loading || clicked) return;
+    // Don't allow click if already claimed or has pending/approved claim
+    if (status !== 'Available' || loading || clicked || claimStatus) return;
     setClicked(true);
     try {
       await onClick?.();
+      setSuccess(true);
     } catch {
       setClicked(false);
     }
   };
 
-  const isDisabled = status !== 'Available' || loading || clicked;
+  // Disable if not available, loading, clicked, or already has a claim
+  const isDisabled = status !== 'Available' || loading || clicked || claimStatus;
 
   const getButtonContent = () => {
+    // Show claim status if user already has a claim on this food
+    if (claimStatus === 'Pending') {
+      return (
+        <>
+          <Clock size={18} />
+          Pending
+        </>
+      );
+    }
+    if (claimStatus === 'Approved') {
+      return (
+        <>
+          <Check size={18} />
+          Approved
+        </>
+      );
+    }
+    if (claimStatus === 'Rejected') {
+      return (
+        <>
+          <XCircle size={18} />
+          Rejected
+        </>
+      );
+    }
+    if (success) {
+      return (
+        <>
+          <Clock size={18} />
+          Pending
+        </>
+      );
+    }
     if (loading || clicked) {
       return (
         <>
@@ -44,37 +82,12 @@ export default function ClaimButton({ status = 'Available', onClick, loading = f
 
   return (
     <motion.button
-      className={`btn ${isDisabled ? 'btn-disabled' : 'btn-primary'}`}
+      className={`claim-btn ${isDisabled ? 'disabled' : ''} ${success ? 'success' : ''}`}
       onClick={handleClick}
       disabled={isDisabled}
       whileTap={!isDisabled ? { scale: 0.97 } : {}}
-      style={{
-        opacity: isDisabled && status !== 'Available' ? 0.7 : 1,
-        cursor: isDisabled ? 'not-allowed' : 'pointer'
-      }}
     >
       {getButtonContent()}
     </motion.button>
   );
-}
-
-// Add spin animation via style
-const style = document.createElement('style');
-style.textContent = `
-  .spin {
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  .btn-disabled {
-    background: var(--gray-200) !important;
-    color: var(--gray-500) !important;
-    box-shadow: none !important;
-  }
-`;
-if (typeof document !== 'undefined' && !document.getElementById('claim-btn-styles')) {
-  style.id = 'claim-btn-styles';
-  document.head.appendChild(style);
 }

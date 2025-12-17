@@ -7,12 +7,16 @@ exports.createFood = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Handle optional image upload
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
     const food = await Food.create({
       donorId: req.user.id,
       foodName,
       description,
       quantity,
       expiryTime,
+      imageUrl,
       location: { type: 'Point', coordinates: [Number(longitude), Number(latitude)] },
     });
 

@@ -13,6 +13,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import FoodList from './pages/FoodList';
 import PostFood from './pages/PostFood';
+import MyClaims from './pages/MyClaims';
+import ManageClaims from './pages/ManageClaims';
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -46,6 +48,25 @@ function DonorRoute({ children }) {
   }
   
   return isDonor ? children : <Navigate to="/dashboard" replace />;
+}
+
+// Receiver Only Route
+function ReceiverRoute({ children }) {
+  const { isAuthenticated, isReceiver, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return isReceiver ? children : <Navigate to="/dashboard" replace />;
 }
 
 // Guest Route (redirect to dashboard if logged in)
@@ -138,6 +159,24 @@ export default function App() {
             <DonorRoute>
               <PostFood />
             </DonorRoute>
+          } 
+        />
+        <Route 
+          path="/manage-claims" 
+          element={
+            <DonorRoute>
+              <ManageClaims />
+            </DonorRoute>
+          } 
+        />
+        
+        {/* Receiver Only Routes */}
+        <Route 
+          path="/my-claims" 
+          element={
+            <ReceiverRoute>
+              <MyClaims />
+            </ReceiverRoute>
           } 
         />
         
