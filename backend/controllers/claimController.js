@@ -45,9 +45,9 @@ exports.createClaim = async (req, res) => {
 exports.updateClaimStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // Approved or Rejected
-    if (!['Approved', 'Rejected'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status' });
+    const { status } = req.body; // Only Approved
+    if (status !== 'Approved') {
+      return res.status(400).json({ message: 'Only Approved status is allowed' });
     }
 
     const claim = await Claim.findById(id)
@@ -89,7 +89,13 @@ exports.updateClaimStatus = async (req, res) => {
 exports.myClaims = async (req, res) => {
   try {
     const claims = await Claim.find({ receiverId: req.user.id })
-      .populate('foodId')
+      .populate({
+        path: 'foodId',
+        populate: {
+          path: 'donorId',
+          select: 'name email phone'
+        }
+      })
       .sort({ claimedAt: -1 });
     res.json(claims);
   } catch (error) {
@@ -104,7 +110,13 @@ exports.myClaimsAsReceiver = async (req, res) => {
     // This returns claims for the user regardless of role
     // If user is a donor, they simply won't have receiver claims
     const claims = await Claim.find({ receiverId: req.user.id })
-      .populate('foodId')
+      .populate({
+        path: 'foodId',
+        populate: {
+          path: 'donorId',
+          select: 'name email phone'
+        }
+      })
       .sort({ claimedAt: -1 });
     res.json(claims);
   } catch (error) {

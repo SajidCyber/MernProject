@@ -56,7 +56,7 @@ export default function Dashboard() {
             total: claims.length,
             available: claims.filter(c => c.status === 'Pending').length,
             claimed: claims.filter(c => c.status === 'Approved').length,
-            expired: claims.filter(c => c.status === 'Rejected').length
+            expired: 0
           });
           setRecentItems(claims.slice(0, 5));
         }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Clock, Package, User } from 'lucide-react';
+import { MapPin, Clock, Package, User, Mail, Phone } from 'lucide-react';
 import ClaimButton from './ClaimButton';
 import './FoodCard.css';
 
@@ -104,6 +104,23 @@ export default function FoodCard({ food, onClaim, showClaimButton = true, userCl
             <span>Posted by {food.donorId.name}</span>
           </div>
         )}
+
+        {food.donorId && (
+          <div className="food-contact">
+            {food.donorId.email && (
+              <a href={`mailto:${food.donorId.email}`} className="contact-item">
+                <Mail size={14} />
+                <span>{food.donorId.email}</span>
+              </a>
+            )}
+            {food.donorId.phone && (
+              <a href={`tel:${food.donorId.phone}`} className="contact-item">
+                <Phone size={14} />
+                <span>{food.donorId.phone}</span>
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       {showClaimButton && (food.status === 'Available' || userClaimStatus) && (
@@ -112,6 +129,7 @@ export default function FoodCard({ food, onClaim, showClaimButton = true, userCl
             status={food.status} 
             onClick={() => onClaim && onClaim(food._id)}
             claimStatus={userClaimStatus}
+            isExpired={timeLeft.expired}
           />
         </div>
       )}

@@ -10,7 +10,9 @@ import {
   Loader2,
   AlertCircle,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Mail,
+  Phone
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -54,7 +56,6 @@ export default function MyClaims() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'Approved': return 'success';
-      case 'Rejected': return 'error';
       default: return 'warning';
     }
   };
@@ -210,6 +211,23 @@ export default function MyClaims() {
                       <div className="claim-approved-info">
                         <AlertCircle size={16} />
                         <span>Contact the donor to arrange pickup!</span>
+                      </div>
+                    )}
+
+                    {claim.status === 'Approved' && claim.foodId?.donorId && (
+                      <div className="donor-contact">
+                        {claim.foodId.donorId.email && (
+                          <a href={`mailto:${claim.foodId.donorId.email}`} className="contact-link">
+                            <Mail size={14} />
+                            <span>{claim.foodId.donorId.email}</span>
+                          </a>
+                        )}
+                        {claim.foodId.donorId.phone && (
+                          <a href={`tel:${claim.foodId.donorId.phone}`} className="contact-link">
+                            <Phone size={14} />
+                            <span>{claim.foodId.donorId.phone}</span>
+                          </a>
+                        )}
                       </div>
                     )}
 

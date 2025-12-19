@@ -73,7 +73,7 @@ exports.sendClaimNotification = async (donorEmail, donorName, foodName, receiver
   }
 };
 
-// Send notification when claim status is updated
+// Send notification when claim status is updated (Approved)
 exports.sendClaimStatusUpdate = async (receiverEmail, receiverName, foodName, status, donorName, donorPhone) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.log('Email not configured. Skipping notification.');
@@ -83,37 +83,30 @@ exports.sendClaimStatusUpdate = async (receiverEmail, receiverName, foodName, st
   try {
     const transporter = createTransporter();
 
-    const isApproved = status === 'Approved';
-    const statusColor = isApproved ? '#10b981' : '#ef4444';
-    const statusEmoji = isApproved ? '✅' : '❌';
+    const statusColor = '#10b981';
+    const statusEmoji = '✅';
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: receiverEmail,
-      subject: `${statusEmoji} Your Claim Has Been ${status}: ${foodName}`,
+      subject: `${statusEmoji} Your Claim Has Been Approved: ${foodName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: ${statusColor}; padding: 20px; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0;">${statusEmoji} Claim ${status}</h1>
+            <h1 style="color: white; margin: 0;">${statusEmoji} Claim Approved</h1>
           </div>
           <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
             <p style="font-size: 16px; color: #374151;">Hello <strong>${receiverName}</strong>,</p>
             <p style="font-size: 16px; color: #374151;">
-              Your claim for <strong>${foodName}</strong> has been <strong style="color: ${statusColor};">${status.toLowerCase()}</strong>.
+              Great news! Your claim for <strong>${foodName}</strong> has been <strong style="color: #10b981;">approved</strong>.
             </p>
             
-            ${isApproved ? `
-              <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-                <h3 style="margin: 0 0 10px 0; color: #374151;">Donor Contact:</h3>
-                <p style="margin: 5px 0; color: #6b7280;">👤 Name: <strong>${donorName}</strong></p>
-                ${donorPhone ? `<p style="margin: 5px 0; color: #6b7280;">📞 Phone: <strong>${donorPhone}</strong></p>` : ''}
-                <p style="margin-top: 10px; color: #374151;">Please coordinate with the donor to arrange pickup.</p>
-              </div>
-            ` : `
-              <p style="font-size: 16px; color: #6b7280;">
-                Don't worry! There are more food listings available. Check out other opportunities.
-              </p>
-            `}
+            <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+              <h3 style="margin: 0 0 10px 0; color: #374151;">Donor Contact:</h3>
+              <p style="margin: 5px 0; color: #6b7280;">👤 Name: <strong>${donorName}</strong></p>
+              ${donorPhone ? `<p style="margin: 5px 0; color: #6b7280;">📞 Phone: <strong>${donorPhone}</strong></p>` : ''}
+              <p style="margin-top: 10px; color: #374151;">Please coordinate with the donor to arrange pickup.</p>
+            </div>
             
             <div style="text-align: center; margin-top: 30px;">
               <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-claims" 

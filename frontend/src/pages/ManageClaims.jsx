@@ -21,7 +21,7 @@ export default function ManageClaims() {
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+  const [filter, setFilter] = useState('all'); // all, pending, approved
   const [actionLoading, setActionLoading] = useState(null); // claimId being processed
 
   const fetchClaims = async (showRefresh = false) => {
@@ -158,12 +158,6 @@ export default function ManageClaims() {
             >
               Approved ({claims.filter(c => c.status === 'Approved').length})
             </button>
-            <button 
-              className={`filter-tab ${filter === 'rejected' ? 'active' : ''}`}
-              onClick={() => setFilter('rejected')}
-            >
-              Rejected ({claims.filter(c => c.status === 'Rejected').length})
-            </button>
           </div>
 
           {/* Claims List */}
@@ -249,7 +243,6 @@ export default function ManageClaims() {
                     <div className="claim-actions">
                       <span className={`status-badge ${getStatusColor(claim.status)}`}>
                         {claim.status === 'Approved' && <CheckCircle size={16} />}
-                        {claim.status === 'Rejected' && <XCircle size={16} />}
                         {claim.status === 'Pending' && <Clock size={16} />}
                         {claim.status}
                       </span>
@@ -267,18 +260,6 @@ export default function ManageClaims() {
                               <CheckCircle size={18} />
                             )}
                             Approve
-                          </button>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleUpdateStatus(claim._id, 'Rejected')}
-                            disabled={actionLoading === claim._id}
-                          >
-                            {actionLoading === claim._id ? (
-                              <Loader2 size={18} className="spin" />
-                            ) : (
-                              <XCircle size={18} />
-                            )}
-                            Reject
                           </button>
                         </div>
                       )}

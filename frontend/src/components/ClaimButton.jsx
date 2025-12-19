@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Loader2, HandHeart, Clock, XCircle } from 'lucide-react';
+import { Check, Loader2, HandHeart, Clock, AlertCircle } from 'lucide-react';
 import './ClaimButton.css';
 
-export default function ClaimButton({ status = 'Available', onClick, loading = false, claimStatus = null }) {
+export default function ClaimButton({ status = 'Available', onClick, loading = false, claimStatus = null, isExpired = false }) {
   const [clicked, setClicked] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleClick = async () => {
-    // Don't allow click if already claimed or has pending/approved claim
-    if (status !== 'Available' || loading || clicked || claimStatus) return;
+    // Don't allow click if expired, not available, loading, clicked, or already has a claim
+    if (isExpired || status !== 'Available' || loading || clicked || claimStatus) return;
     setClicked(true);
     try {
       await onClick?.();
@@ -19,10 +19,19 @@ export default function ClaimButton({ status = 'Available', onClick, loading = f
     }
   };
 
-  // Disable if not available, loading, clicked, or already has a claim
-  const isDisabled = status !== 'Available' || loading || clicked || claimStatus;
+  // Disable if expired, not available, loading, clicked, or already has a claim
+  const isDisabled = isExpired || status !== 'Available' || loading || clicked || claimStatus;
 
   const getButtonContent = () => {
+    // Show expired state first
+    if (isExpired) {
+      return (
+        <>
+          <AlertCircle size={18} />
+          Expired
+        </>
+      );
+    }
     // Show claim status if user already has a claim on this food
     if (claimStatus === 'Pending') {
       return (
@@ -37,14 +46,6 @@ export default function ClaimButton({ status = 'Available', onClick, loading = f
         <>
           <Check size={18} />
           Approved
-        </>
-      );
-    }
-    if (claimStatus === 'Rejected') {
-      return (
-        <>
-          <XCircle size={18} />
-          Rejected
         </>
       );
     }
